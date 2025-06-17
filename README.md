@@ -1,2 +1,2 @@
-# PM4_SistemaAcad-mico
+# PM4_SistemaAcademico
 📚 Sistema Acadêmico com JavaSwing
