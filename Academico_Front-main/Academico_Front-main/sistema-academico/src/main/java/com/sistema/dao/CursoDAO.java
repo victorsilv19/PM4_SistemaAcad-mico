@@ -13,7 +13,7 @@ import java.util.List;
 public class CursoDAO {
 
     public void adicionarCurso(Curso curso) {
-        String sql = "INSERT INTO curso (nome, codigo) VALUES (?, ?)";
+        String sql = "INSERT INTO \"Curso\" (nome, codigo) VALUES (?, ?)";
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, curso.getNome());
