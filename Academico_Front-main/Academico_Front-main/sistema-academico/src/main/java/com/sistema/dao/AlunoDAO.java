@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AlunoDAO {
 
@@ -81,4 +83,35 @@ public class AlunoDAO {
             return null;
         }
     }
+    
+    public List<Aluno> buscarPorTermo(String termo) {
+        List<Aluno> alunos = new ArrayList<>();
+        String sql = "SELECT * FROM \"Aluno\" WHERE nome ILIKE ? OR loginInput ILIKE ? OR curso ILIKE ?";
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            String likeTerm = "%" + termo + "%";
+            stmt.setString(1, likeTerm);
+            stmt.setString(2, likeTerm);
+            stmt.setString(3, likeTerm);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Aluno aluno = new Aluno();
+                aluno.setId(rs.getInt("id"));
+                aluno.setNome(rs.getString("nome"));
+                aluno.setMatricula(rs.getString("loginInput"));
+                aluno.setCurso(rs.getString("curso"));
+                alunos.add(aluno);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return alunos;
+    }
+
+    
 }
