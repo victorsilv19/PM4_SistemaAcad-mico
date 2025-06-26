@@ -52,4 +52,17 @@ public class ProfessorDAO {
         }
     }
 
+    public int contarProfessores() {
+    String sql = "SELECT COUNT(*) FROM \"Professor\"";
+    try (Connection conn = Conexao.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) return rs.getInt(1);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+
+
 }
