@@ -1,42 +1,119 @@
 package com.sistema.view;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.sistema.dao.CursoDAO;
+import com.sistema.dao.NotaDAO;
+import com.sistema.model.Nota;
 import com.sistema.model.Professor;
-
-import main.TelaLogin;
+import main.TelaSelecaoLogin;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.util.List;
 
 public class TelaProfessor extends JFrame {
-	public TelaProfessor(Professor professor) {
-	    setTitle("Área do Professor");
-	    setSize(400, 300);
-	    setDefaultCloseOperation(EXIT_ON_CLOSE);
-	    setLayout(null); // Cuidado com layout absoluto!
 
-	    // Posicione os componentes manualmente (coordenadas x, y, largura, altura)
-	    JLabel welcomeLabel = new JLabel("Olá, Prof. " + professor.getNome());
-	    welcomeLabel.setBounds(50, 20, 300, 25);
-	    add(welcomeLabel);
-	    
-	    JButton btnNotas = new JButton("Atribuir Notas");
-	    btnNotas.setBounds(50, 60, 200, 30);
-	    btnNotas.addActionListener(e -> {
-	        new Tela_Lancar_Nota(professor.getId()).setVisible(true);
-	    });
-	    add(btnNotas);
-	    
-	    JButton btnChamada = new JButton("Fazer Chamada");
-	    btnChamada.setBounds(50, 100, 200, 30);
-	    add(btnChamada);
-	    
-	    JButton btnSair = new JButton("Sair");
-	    btnSair.setBounds(50, 180, 200, 30);
-	    btnSair.addActionListener(e -> {
-	        dispose();
-	        new TelaLogin();
-	    });
-	    add(btnSair);
+    private Professor professor;
 
-	    setVisible(true); // Importante!
-	}
+    public TelaProfessor(Professor professor) {
+        this.professor = professor;
+
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+            UIManager.put("defaultFont", new Font("Segoe UI", Font.PLAIN, 14));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        setTitle("Área do Professor");
+        setSize(900, 600);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JTabbedPane abas = new JTabbedPane(JTabbedPane.LEFT);
+
+        abas.addTab("Home", criarAbaHome());
+        abas.addTab("Lançar Nota", new Tela_Lancar_Nota(professor));
+        abas.addTab("Sair", criarAbaSair());
+
+        add(abas);
+
+        abas.addChangeListener(e -> {
+            if (abas.getSelectedIndex() == abas.indexOfTab("Sair")) {
+                int confirm = JOptionPane.showConfirmDialog(
+                        this,
+                        "Deseja realmente sair?",
+                        "Confirmar saída",
+                        JOptionPane.YES_NO_OPTION
+                );
+                if (confirm == JOptionPane.YES_OPTION) {
+                    dispose();
+                    new TelaSelecaoLogin().setVisible(true);
+                } else {
+                    abas.setSelectedIndex(0);
+                }
+            }
+        });
+    }
+
+    private JPanel criarAbaHome() {
+        JPanel painel = new JPanel(new BorderLayout());
+        painel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JTextArea area = new JTextArea();
+        area.setEditable(false);
+        area.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        StringBuilder texto = new StringBuilder();
+        texto.append("Disciplinas atribuídas:\n");
+
+        CursoDAO cursoDAO = new CursoDAO();
+        List<String> disciplinas = cursoDAO.getDisciplinasPorProfessor(professor.getId());
+
+        if (disciplinas.isEmpty()) {
+            texto.append("- Nenhuma disciplina atribuída.\n");
+        } else {
+            for (String nome : disciplinas) {
+                texto.append("- ").append(nome).append("\n");
+            }
+        }
+
+        texto.append("\nNotas lançadas hoje:\n");
+
+        NotaDAO notaDAO = new NotaDAO();
+        List<Nota> notasHoje = notaDAO.getNotasLancadasHoje(professor.getId());
+
+        if (notasHoje.isEmpty()) {
+            texto.append("- Nenhuma nota lançada hoje.\n");
+        } else {
+            for (Nota n : notasHoje) {
+                texto.append("- Aluno ID ").append(n.getAlunoId())
+                      .append(" | Curso: ").append(getCursoNomePorId(n.getCursoId()))
+                      .append(" | Nota: ").append(n.getNota())
+                      .append("\n");
+            }
+        }
+
+        area.setText(texto.toString());
+        painel.add(new JScrollPane(area), BorderLayout.CENTER);
+
+        return painel;
+    }
+
+    private JPanel criarAbaSair() {
+        JPanel painel = new JPanel(new BorderLayout());
+        painel.setBorder(new EmptyBorder(50, 50, 50, 50));
+        painel.add(new JLabel("Clique na aba para sair.", SwingConstants.CENTER), BorderLayout.CENTER);
+        return painel;
+    }
+
+    private String getCursoNomePorId(int id) {
+        switch (id) {
+            case 1: return "ADS";
+            case 2: return "Português";
+            case 3: return "Matemática";
+            default: return "Desconhecido";
+        }
+    }
 }

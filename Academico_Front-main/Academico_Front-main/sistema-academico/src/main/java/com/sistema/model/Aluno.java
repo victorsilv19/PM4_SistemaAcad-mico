@@ -5,7 +5,7 @@ public class Aluno {
     private String nome;
     private String matricula;
     private String curso;
-    private String senha;  // novo atributo
+    private String senha; 
 
     public Aluno() {}
 
